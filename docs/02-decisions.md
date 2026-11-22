@@ -12,6 +12,7 @@
 
 - **Module system:** CommonJS (`"type": "commonjs"`), decided by the learner during P1-T01 (2026-11-22). This changes the earlier choice of ESM. Use `require` and `module.exports` consistently across the whole project; do not mix with `import`/`export`.
 - **Env loading:** `dotenv`, chosen by the learner in P1-T03 (reason to be added by the learner). Config lives in `src/config/index.js`; it validates with Zod at startup and exits with a message that names the key and never prints values.
+- **Response shape (P1-T05):** success `{ "success": true, "data": ... }` plus optional `"meta"` for pagination; error `{ "success": false, "message": "...", "details": [...]? }`. `details` is only for validation errors (`[{ "field", "message" }]`). A `stack` field appears only when `NODE_ENV=development`. One error class `AppError(message, statusCode, details?)` in `src/common/errors/`; `notFound` and `errorHandler` in `src/common/middlewares/`. Mongoose `CastError` and `ValidationError` map to 400, duplicate key (`11000`) to 409, malformed JSON to 400, anything unknown to a generic 500.
 - **MongoDB hosting:** MongoDB Atlas (replica set, so transactions are available).
 
 ## Confirmed in the Understand step (2026-11-22)
