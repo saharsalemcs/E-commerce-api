@@ -11,6 +11,7 @@
 - **Docs rule:** the mentor checks the latest official docs (Context7 MCP first) before writing or reviewing code, and may search the web for how people apply things when opinions differ.
 
 - **Module system:** CommonJS (`"type": "commonjs"`), decided by the learner during P1-T01 (2026-11-22). This changes the earlier choice of ESM. Use `require` and `module.exports` consistently across the whole project; do not mix with `import`/`export`.
+- **Env loading:** `dotenv`, chosen by the learner in P1-T03 (reason to be added by the learner). Config lives in `src/config/index.js`; it validates with Zod at startup and exits with a message that names the key and never prints values.
 - **MongoDB hosting:** MongoDB Atlas (replica set, so transactions are available).
 
 ## Confirmed in the Understand step (2026-11-22)

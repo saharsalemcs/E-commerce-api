@@ -1,6 +1,13 @@
 const express = require("express");
+const morgan = require("morgan");
+const config = require("./config");
 
 const app = express();
+
+// 1) MIDDLEWARES
+if (config.env === "development") {
+  app.use(morgan("dev"));
+}
 
 app.use(express.json());
 
