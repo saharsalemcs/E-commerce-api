@@ -1,0 +1,8 @@
+docs/source
+
+node_modules/
+
+config.env
+
+.claude/
+claude.md
