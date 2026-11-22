@@ -6,3 +6,6 @@ config.env
 
 .claude/
 claude.md
+
+.env*
+!.env.example

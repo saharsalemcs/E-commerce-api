@@ -6,13 +6,14 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 
 ### P1-T01 Project setup and folder structure
 
-**Goal:** Create the project skeleton as a modular monolith using ESM, with the app setup separated from the server start.
+**Goal:** Create the project skeleton as a modular monolith using CommonJS, with the app setup separated from the server start.
 **Source:** Brief section 07 (modular monolith); `.claude/rules/folder-structure.md`.
 **Depends on:** none.
 
 **Scope**
+
 - Endpoints: `GET /api/v1/health` (public) returns a small JSON body saying the service is up.
-- Project: `package.json` with ESM enabled, a start script and a dev script with auto-restart (`node --watch` or `nodemon`, your choice and reason), a Node engine version.
+- Project: `package.json` with the module system set to CommonJS (`"type": "commonjs"`), a start script and a dev script with auto-restart (`node --watch` or `nodemon`, your choice and reason), a Node engine version.
 - Folders: designed by you, following the folder-structure rule: modules by business area, a shared folder, `app` separate from `server`, scripts outside `src`.
 - Git: `.gitignore` covers `node_modules` and every `.env*` file except `.env.example`.
 - Postman: a collection and an environment with a `baseUrl` variable; the health request is saved.
@@ -20,12 +21,11 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** linting, config loading, database, error handling.
 
 **Acceptance criteria (verify in Postman)**
+
 - `GET {{baseUrl}}/api/v1/health` -> `200` with JSON.
 - An unknown path still returns something (Express default is fine for now; P1-T05 replaces it).
 - `git status` shows no `.env` or `node_modules`.
 - You can explain, for each top-level folder, what belongs there and where a new "shipping" module would go.
-
-**Concepts to review:** ESM vs CommonJS in Node (`"type": "module"`, file extensions in imports, no `__dirname` by default); why `app` and `server` are split; modular monolith vs layered-by-type folders.
 
 **Definition of done:** all acceptance criteria pass in Postman, unauthorized access is rejected, invalid input is rejected, database state is correct, and `/review-task` has returned "Ready".
 
@@ -38,7 +38,8 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T01.
 
 **Scope**
-- ESLint using its current flat config format, set up for ESM and Node globals.
+
+- ESLint using its current flat config format, set up for CommonJS (`sourceType: "commonjs"`) and Node globals. The config file itself must use the same module system as the project.
 - Prettier with a small config; ESLint and Prettier must not fight each other.
 - Scripts: `lint`, `lint:fix` (or similar), `format`.
 - Editor: format on save works in VS Code.
@@ -46,6 +47,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** pre-commit hooks (optional, only if you want them).
 
 **Acceptance criteria**
+
 - `npm run lint` passes on the current code.
 - Introduce an unused variable on purpose -> lint reports it. Remove it.
 - Mis-format a file on purpose -> format script fixes it.
@@ -63,6 +65,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T01.
 
 **Scope**
+
 - Data: at least `NODE_ENV`, `PORT`, `MONGODB_URI`. Add more keys later as tasks need them (JWT, Resend, admin seed).
 - Loading: `dotenv` or Node's built-in `--env-file`. Pick one and say why.
 - Validation: the environment is validated with Zod at startup. Missing or malformed values stop the app with a clear message that names the key (never prints secret values).
@@ -72,6 +75,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** using the DB URI (next task).
 
 **Acceptance criteria**
+
 - Remove `PORT` (or set it to `abc`) -> the app refuses to start and names the problem.
 - With valid values the app starts and `/health` still works.
 - A project-wide search for `process.env` finds it only in the config module.
@@ -89,6 +93,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T03.
 
 **Scope**
+
 - Atlas: a free cluster, a database user with least privilege, network access set for your machine. The connection string lives only in `.env`.
 - Startup order: connect first, then listen. If the connection fails, log a clear message and exit with a non-zero code.
 - Shutdown: on `SIGINT`/`SIGTERM`, stop accepting requests, close the DB connection, exit.
@@ -98,6 +103,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** any model.
 
 **Acceptance criteria**
+
 - Valid URI -> logs "connected" and the server listens.
 - Wrong password in the URI -> process exits with a readable error, no stack spam with credentials in it.
 - Ctrl+C -> logs a clean shutdown.
@@ -115,6 +121,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T01.
 
 **Scope**
+
 - Decide and **write down in `docs/02-decisions.md`** the success shape and the error shape (for example: status, message, optional details for validation errors, optional pagination meta). This closes the open decision "API response and error shape".
 - An operational error class carrying an HTTP status and a client-safe message.
 - Central error middleware: operational errors -> their status and message; unknown errors -> `500` with a generic message; in development you may include the stack, never in production.
@@ -125,6 +132,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** Zod validation errors (next task), auth errors.
 
 **Acceptance criteria (verify in Postman)**
+
 - `GET /api/v1/nope` -> `404`, error shape.
 - `POST` to any route with broken JSON -> `400`, error shape.
 - A temporary test route that throws inside an `async` handler -> `500`, generic message, no stack when `NODE_ENV=production`. Remove the route afterwards.
@@ -143,6 +151,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T05.
 
 **Scope**
+
 - A validation middleware (or helper) that takes Zod schemas for any of body / params / query.
 - On failure: `400`, with a list of field paths and messages a client could show next to a form field.
 - On success: handlers receive the **parsed** values (coerced, defaults applied, unknown keys handled by a rule you choose: strip or reject).
@@ -152,6 +161,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** schemas for real features (each feature task writes its own).
 
 **Acceptance criteria (verify in Postman)**
+
 - A temporary test route with a body schema: missing field -> `400` naming the field; wrong type -> `400`; valid -> `200` with the parsed value echoed. Remove the route afterwards (or keep it only in development).
 - A route with an `:id` param: `abc` -> `400`, not a `500` cast error.
 
@@ -168,6 +178,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T03, P1-T05.
 
 **Scope**
+
 - `helmet` with defaults (understand what the main headers do).
 - `cors` with an allow-list from config, not `*` in production.
 - JSON body size limit.
@@ -177,6 +188,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** rate limiting (P2-T08, on auth routes).
 
 **Acceptance criteria (verify in Postman)**
+
 - Response headers on `/health` show helmet's headers (for example `X-Content-Type-Options`).
 - A body larger than your limit -> `413` in the error shape.
 - Requests are logged in development.
@@ -194,6 +206,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** none (do it before Phase 2 code).
 
 **Scope**
+
 - A diagram (any tool: draw.io, Excalidraw, Mermaid) saved under `docs/design/`, plus a short text file explaining it.
 - Entities: User (with roles), Address, AuditLog, Category, Product, Variant (SKU), ShippingZone, Cart, Coupon, Order (with items, address snapshot, shipment fields, statusHistory), ReturnRequest.
 - For each: key fields, types, required/unique, indexes, and relationships (reference vs embedded).
@@ -207,6 +220,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** any code.
 
 **Acceptance criteria**
+
 - Every MVP entity is in the diagram with its relationships.
 - The three decisions above are written in `docs/02-decisions.md` with reasons.
 - You can explain how "two variants of one product, buy one, only its stock changes" (brief scenario 01) maps to your model.
@@ -224,6 +238,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Depends on:** P1-T08.
 
 **Scope**
+
 - Order statuses: `pending`, `accepted`, `packing`, `shipped`, `delivered`, `cancelled`.
 - Payment statuses for COD: at least `pending` and `paid` (decide if you need more, for example what payment status a cancelled COD order has).
 - For each transition: allowed from-state, to-state, which roles may trigger it, side effects (stock restored, coupon usage released, statusHistory entry, audit entry, timestamps such as `shippedAt`/`deliveredAt`).
@@ -234,6 +249,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 **Not in this task:** any code.
 
 **Acceptance criteria**
+
 - Every allowed transition is drawn; everything not drawn is forbidden.
 - You can answer: "two operators press 'ship' on the same order at the same time, what must happen?"
 

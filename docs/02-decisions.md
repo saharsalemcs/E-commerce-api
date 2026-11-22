@@ -10,7 +10,7 @@
 - **AI role:** mentor, not code writer. Code is written only on explicit request.
 - **Docs rule:** the mentor checks the latest official docs (Context7 MCP first) before writing or reviewing code, and may search the web for how people apply things when opinions differ.
 
-- **Module system:** ESM.
+- **Module system:** CommonJS (`"type": "commonjs"`), decided by the learner during P1-T01 (2026-11-22). This changes the earlier choice of ESM. Use `require` and `module.exports` consistently across the whole project; do not mix with `import`/`export`.
 - **MongoDB hosting:** MongoDB Atlas (replica set, so transactions are available).
 
 ## Confirmed in the Understand step (2026-11-22)
