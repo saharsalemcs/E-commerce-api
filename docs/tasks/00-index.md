@@ -22,9 +22,9 @@ These apply to every task, so the task files do not repeat them.
 ## Phase 1: Foundation (`phase-1-foundation.md`)
 | | ID | Task | Depends on |
 |---|---|---|---|
-| [ ] | P1-T01 | Project setup and folder structure | none |
-| [ ] | P1-T02 | Linting and formatting | P1-T01 |
-| [ ] | P1-T03 | Configuration module | P1-T01 |
+| [x] | P1-T01 | Project setup and folder structure | none |
+| [x] | P1-T02 | Linting and formatting | P1-T01 |
+| [x] | P1-T03 | Configuration module | P1-T01 |
 | [ ] | P1-T04 | Database connection (Atlas) | P1-T03 |
 | [ ] | P1-T05 | Error handling and response shape | P1-T01 |
 | [ ] | P1-T06 | Request validation with Zod | P1-T05 |
