@@ -6,14 +6,14 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 
 ### P1-T01 Project setup and folder structure
 
-**Goal:** Create the project skeleton as a modular monolith using CommonJS, with the app setup separated from the server start.
+**Goal:** Create the project skeleton as a modular monolith using ESM, with the app setup separated from the server start.
 **Source:** Brief section 07 (modular monolith); `.claude/rules/folder-structure.md`.
 **Depends on:** none.
 
 **Scope**
 
 - Endpoints: `GET /api/v1/health` (public) returns a small JSON body saying the service is up.
-- Project: `package.json` with the module system set to CommonJS (`"type": "commonjs"`), a start script and a dev script with auto-restart (`node --watch` or `nodemon`, your choice and reason), a Node engine version.
+- Project: `package.json` with the module system set to ESM (`"type": "module"`), a start script and a dev script with auto-restart (`node --watch` or `nodemon`, your choice and reason), a Node engine version.
 - Folders: designed by you, following the folder-structure rule: modules by business area, a shared folder, `app` separate from `server`, scripts outside `src`.
 - Git: `.gitignore` covers `node_modules` and every `.env*` file except `.env.example`.
 - Postman: a collection and an environment with a `baseUrl` variable; the health request is saved.
@@ -39,7 +39,7 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 
 **Scope**
 
-- ESLint using its current flat config format, set up for CommonJS (`sourceType: "commonjs"`) and Node globals. The config file itself must use the same module system as the project.
+- ESLint using its current flat config format, set up for ESM (`sourceType: "module"`) and Node globals. The config file itself must use the same module system as the project.
 - Prettier with a small config; ESLint and Prettier must not fight each other.
 - Scripts: `lint`, `lint:fix` (or similar), `format`.
 - Editor: format on save works in VS Code.

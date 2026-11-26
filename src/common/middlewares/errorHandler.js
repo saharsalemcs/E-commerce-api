@@ -1,5 +1,5 @@
-const config = require("../../config");
-const AppError = require("../errors/AppError");
+import config from "../../config/index.js";
+import AppError from "../errors/AppError.js";
 
 // Turn known library errors into AppError so there is one path to the client.
 const normalizeError = (err) => {
@@ -61,4 +61,4 @@ const errorHandler = (err, req, res, _next) => {
   return res.status(500).json(body);
 };
 
-module.exports = errorHandler;
+export default errorHandler;
