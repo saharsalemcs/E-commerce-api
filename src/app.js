@@ -9,21 +9,27 @@ import errorHandler from "./common/middlewares/errorHandler.js";
 const app = express();
 
 // 1) MIDDLEWARES
+
+// trust proxy
+// Number = how many proxy hops to trust (1 = one proxy, e.g. Render/Heroku/nginx).
+app.set("trust proxy", config.trustProxy);
+
 // Baseline HTTP security headers
 app.use(helmet());
 
+// Enable CORS (Cross-Origin Resource Sharing)
+
+// Morgan
 if (config.env === "development") {
   app.use(morgan("dev"));
 } else if (config.env === "production") {
   app.use(morgan("combined"));
 }
 
-// 1. Enable CORS (Cross-Origin Resource Sharing)
-
 // Limit incoming JSON payload size
 app.use(express.json({ limit: "10kb" }));
 
-// Mount Routes
+// 2) Mount Routes
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Service is up" });
 });

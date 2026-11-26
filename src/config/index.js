@@ -14,6 +14,8 @@ const envSchema = z.object({
         value.startsWith("mongodb://") || value.startsWith("mongodb+srv://"),
       { message: "must start with mongodb:// or mongodb+srv://" },
     ),
+  //  number of proxies in front of the app (0 = none)
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 });
 
 const result = envSchema.safeParse(process.env);
@@ -35,6 +37,7 @@ const config = Object.freeze({
   db: Object.freeze({
     uri: env.MONGODB_URI,
   }),
+  trustProxy: env.TRUST_PROXY,
 });
 
 export default config;
