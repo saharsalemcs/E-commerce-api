@@ -14,6 +14,7 @@
 - **Env loading:** `dotenv`, chosen by the learner in P1-T03 (reason to be added by the learner). Config lives in `src/config/index.js`; it validates with Zod at startup and exits with a message that names the key and never prints values.
 - **Response shape (P1-T05):** success `{ "success": true, "data": ... }` plus optional `"meta"` for pagination; error `{ "success": false, "message": "...", "details": [...]? }`. `details` is only for validation errors (`[{ "field", "message" }]`). A `stack` field appears only when `NODE_ENV=development`. One error class `AppError(message, statusCode, details?)` in `src/common/errors/`; `notFound` and `errorHandler` in `src/common/middlewares/`. Mongoose `CastError` and `ValidationError` map to 400, duplicate key (`11000`) to 409, malformed JSON to 400, anything unknown to a generic 500.
 - **MongoDB hosting:** MongoDB Atlas (replica set, so transactions are available).
+- **Unknown keys in validation (P1-T06):** `strict` (reject) for `body`, `strip` for `query` and `params`. Decided by the learner (2026-11-26). Reason to be added by the learner during the plan review (for example: a rejected body makes a client mistake such as a stray `role` visible instead of silently ignored).
 
 ## Confirmed in the Understand step (2026-11-22)
 - Cash on Delivery only. The Order has `paymentMethod` and `paymentStatus` fields (default status for COD is pending) so a gateway can be added later without redesigning the Order.
