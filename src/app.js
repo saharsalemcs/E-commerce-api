@@ -1,10 +1,10 @@
 import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
-import cors from "cors";
 import config from "./config/index.js";
 import notFound from "./common/middlewares/notFound.js";
 import errorHandler from "./common/middlewares/errorHandler.js";
+import { corsMiddleware } from "./common/middlewares/cors.js";
 
 const app = express();
 
@@ -18,6 +18,7 @@ app.set("trust proxy", config.trustProxy);
 app.use(helmet());
 
 // Enable CORS (Cross-Origin Resource Sharing)
+app.use(corsMiddleware);
 
 // Morgan
 if (config.env === "development") {
@@ -27,7 +28,7 @@ if (config.env === "development") {
 }
 
 // Limit incoming JSON payload size
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: config.bodyLimit }));
 
 // 2) Mount Routes
 app.get("/api/v1/health", (req, res) => {

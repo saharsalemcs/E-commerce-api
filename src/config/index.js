@@ -14,6 +14,16 @@ const envSchema = z.object({
         value.startsWith("mongodb://") || value.startsWith("mongodb+srv://"),
       { message: "must start with mongodb:// or mongodb+srv://" },
     ),
+  CORS_ORIGINS: z
+    .string()
+    .default("")
+    .transform((value) =>
+      value
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
+  BODY_LIMIT: z.string().default("100kb"),
   //  number of proxies in front of the app (0 = none)
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 });
@@ -37,6 +47,8 @@ const config = Object.freeze({
   db: Object.freeze({
     uri: env.MONGODB_URI,
   }),
+  corsOrigins: Object.freeze(env.CORS_ORIGINS),
+  bodyLimit: env.BODY_LIMIT,
   trustProxy: env.TRUST_PROXY,
 });
 
