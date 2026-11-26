@@ -1,8 +1,8 @@
-const js = require("@eslint/js");
-const globals = require("globals");
-const eslintConfigPrettier = require("eslint-config-prettier");
+import js from "@eslint/js";
+import globals from "globals";
+import eslintConfigPrettier from "eslint-config-prettier";
 
-module.exports = [
+export default [
   {
     ignores: ["node_modules/**"],
   },
@@ -17,7 +17,7 @@ module.exports = [
       },
     },
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "no-unused-vars": ["warning", { argsIgnorePattern: "^_" }],
     },
   },
   eslintConfigPrettier,

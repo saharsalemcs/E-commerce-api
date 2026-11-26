@@ -1,5 +1,5 @@
-const dotenv = require("dotenv");
-const { z } = require("zod");
+import dotenv from "dotenv";
+import { z } from "zod";
 
 // Load .env into process.env. This is the only place that does it.
 dotenv.config({ quiet: true });
@@ -19,7 +19,6 @@ const envSchema = z.object({
 const result = envSchema.safeParse(process.env);
 
 if (!result.success) {
-  // Print only the key name and the rule that failed. Never print the values.
   console.error("Invalid environment configuration:");
   for (const issue of result.error.issues) {
     console.error(`  - ${issue.path.join(".")}: ${issue.message}`);
@@ -38,4 +37,4 @@ const config = Object.freeze({
   }),
 });
 
-module.exports = config;
+export default config;

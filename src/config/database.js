@@ -1,12 +1,18 @@
-const mongoose = require("mongoose");
-const config = require("./index");
+import mongoose from "mongoose";
+import config from "./index.js";
 
-module.exports = () => {
-  mongoose
-    .connect(config.db.uri)
-    .then(() => console.log("DB connected Successfully!"))
-    .catch((err) => {
-      console.log("Connection ERROR!: ", err.message);
-      process.exit(1);
+export async function connectDB() {
+  try {
+    await mongoose.connect(config.db.uri, {
+      serverSelectionTimeoutMS: 10000,
     });
-};
+    console.log("DB connected successfully!");
+  } catch (err) {
+    console.error("Connection ERROR!: ", err.message);
+    process.exit(1);
+  }
+}
+
+export async function disconnectDB() {
+  await mongoose.connection.close();
+}
