@@ -14,7 +14,27 @@
 - **Env loading:** `dotenv`, chosen by the learner in P1-T03 (reason to be added by the learner). Config lives in `src/config/index.js`; it validates with Zod at startup and exits with a message that names the key and never prints values.
 - **Response shape (P1-T05):** success `{ "success": true, "data": ... }` plus optional `"meta"` for pagination; error `{ "success": false, "message": "...", "details": [...]? }`. `details` is only for validation errors (`[{ "field", "message" }]`). A `stack` field appears only when `NODE_ENV=development`. One error class `AppError(message, statusCode, details?)` in `src/common/errors/`; `notFound` and `errorHandler` in `src/common/middlewares/`. Mongoose `CastError` and `ValidationError` map to 400, duplicate key (`11000`) to 409, malformed JSON to 400, anything unknown to a generic 500.
 - **MongoDB hosting:** MongoDB Atlas (replica set, so transactions are available).
-- **Unknown keys in validation (P1-T06):** `strict` (reject) for `body`, `strip` for `query` and `params`. Decided by the learner (2026-11-26). Reason to be added by the learner during the plan review (for example: a rejected body makes a client mistake such as a stray `role` visible instead of silently ignored).
+- **Unknown keys in validation (P1-T06):** **Decision:** `body` schemas use `strict()` (reject unknown keys). `query` uses `strip()`.
+*Why:*
+- A typo like `emial` instead of `email` fails loudly with a `400` instead of being silently ignored.
+- Blocks mass-assignment attempts (for example `role: "admin"` on register). The request is rejected and the attempt is visible, not hidden.
+- Easier to debug: the client always knows exactly which field was not accepted.
+- Query uses `strip()` because clients and tools often add harmless extra params (tracking, cache busters), and rejecting them adds friction without security value.
+
+**Where parsed values live:** `req.validated`
+ The validate middleware stores parsed values in `req.validated = { body, params, query }`. Controllers read from `req.validated`, never from raw `req.body/params/query`.
+*Why:*
+- In Express 5, `req.query` is a read-only getter, so it cannot be overwritten with the parsed result.
+- One consistent place for all three sources instead of overwriting some and not others.
+- Parsed values include coercion (`"2"` becomes `2`) and defaults, so handlers get clean typed data.
+- `req.body` can be `undefined` when no body was parsed. It is passed to the schema as is, so a missing required body fails as a normal `400`.
+
+**Validation error `field` format**
+ Each item in `details` is `{ field, message }`, where `field` is `<source>.<path>`, for example `body.email` or `body.items.0.qty`. Nested paths are joined with `.`; array indexes are numbers in the path. If the path is empty, `field` is just the source (for example `body`).
+*Why:*
+- The same name can exist in body and query, so the source prefix removes ambiguity.
+- A frontend can split on `.` to place the message under the right form field.
+- Matches the `details` shape already used for Mongoose validation errors in P1-T05.
 
 ## Confirmed in the Understand step (2026-11-22)
 - Cash on Delivery only. The Order has `paymentMethod` and `paymentStatus` fields (default status for COD is pending) so a gateway can be added later without redesigning the Order.

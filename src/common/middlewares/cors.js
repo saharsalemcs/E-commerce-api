@@ -14,6 +14,7 @@ export const corsMiddleware = cors({
     return callback(null, false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   maxAge: 600,
   // credentials: true,  // enable only if you use cookies (P2 auth)
 });
