@@ -1,5 +1,5 @@
-import { formatIssues } from "../validators/formatIssues";
-import AppError from "../errors/AppError";
+import { formatIssues } from "../validators/formatIssues.js";
+import AppError from "../errors/AppError.js";
 
 const SOURCES = ["body", "params", "query"];
 
