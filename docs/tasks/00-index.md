@@ -35,7 +35,7 @@ These apply to every task, so the task files do not repeat them.
 ## Phase 2: Auth and users (`phase-2-auth-and-users.md`)
 | | ID | Task | Depends on |
 |---|---|---|---|
-| [ ] | P2-T01 | User model | P1-T04, P1-T08 |
+| [x] | P2-T01 | User model | P1-T04, P1-T08 |
 | [ ] | P2-T02 | Register | P2-T01, P1-T06 |
 | [ ] | P2-T03 | Login and authentication middleware | P2-T02 |
 | [ ] | P2-T04 | Role authorization and first-admin seed | P2-T03 |

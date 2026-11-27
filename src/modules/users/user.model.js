@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import validator from "validator";
-import { ROLES } from "../../common/constants/roles";
-import { EGYPT_PHONE_REGEX } from "../../common/validators/common";
+import { ROLES } from "../../common/constants/roles.js";
+import { EGYPT_PHONE_REGEX } from "../../common/validators/common.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,11 +17,8 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please provide your email!"],
       trim: true,
       unique: true,
-      validate: [
-        validator.isEmail,
-        validator.isLowercase,
-        "Please provide a valid email!",
-      ],
+      lowercase: true,
+      validate: [validator.isEmail, "Please provide a valid email!"],
     },
     phone: {
       type: String,
@@ -46,7 +43,7 @@ const userSchema = new mongoose.Schema(
       },
       default: ROLES.CUSTOMER,
     },
-    active: {
+    isActive: {
       type: Boolean,
       default: true,
     },
@@ -57,8 +54,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Indexes
-userSchema.index({ email: 1 }, { unique: true });
+// Supports the "at least one active admin" check (P2-T05).
+userSchema.index({ role: 1, isActive: 1 });
 
 userSchema.set("toJSON", {
   transform: (_doc, ret) => {
