@@ -37,7 +37,7 @@ Roles in this phase: catalog writes are allowed to `admin` and `catalog_manager`
 
 ### P3-T02 Product and variant model, create product
 
-**Goal:** Implement the Product and Variant model from your ERD and let staff create a product with its first variants.
+**Goal:** Implement the Product and Variant models from your ERD (variants are a separate collection, one document per SKU) and let staff create a product with its first variants.
 **Source:** EC-01; EC-02; brief section 06 (Product / ProductVariant).
 **Depends on:** P3-T01.
 
@@ -63,7 +63,7 @@ Roles in this phase: catalog writes are allowed to `admin` and `catalog_manager`
 - Delete a category that has a product -> `409`.
 - No token -> `401`. Customer or order operator -> `403`.
 
-**Concepts to review:** unique indexes on embedded arrays vs on a separate collection (they behave differently; check the MongoDB docs for your choice); integer money.
+**Concepts to review:** unique indexes across separate documents (decided in P1-T08: variants are their own collection, see `docs/design/data-model.md` section 3.1); integer money.
 
 **Definition of done:** all acceptance criteria pass in Postman, unauthorized access is rejected, invalid input is rejected, database state is correct, and `/review-task` has returned "Ready".
 
@@ -131,8 +131,8 @@ Roles in this phase: catalog writes are allowed to `admin` and `catalog_manager`
 **Scope**
 - Endpoint: `POST /api/v1/admin/variants/:variantId/stock-adjustments` (admin, catalog manager). Body: a signed integer change (for example `+20` or `-2`), a reason from a fixed list (`initial_stock`, restock, damaged, lost, correction), an optional note.
 - Business rules: the update is a **single atomic conditional operation**: it fails if the result would be negative; no read-then-write. Zero change is rejected. The response includes the new stock.
-- `initial_stock`: a positive change only, allowed only when the variant has no previous adjustment; a second `initial_stock` on the same variant -> `409`. Decide how you know "no previous adjustment" (a flag on the variant, or the audit log) and make the check safe against two requests at once.
-- Audit: every adjustment writes an entry with the change, reason, before/after stock, actor.
+- `initial_stock`: a positive change only, allowed only when the variant has no previous adjustment; a second `initial_stock` on the same variant -> `409`. Decided in P1-T08: the variant has an `initialStockSet` flag, flipped from `false` to `true` in the **same conditional atomic update** that adds the stock (no read-then-write, so two simultaneous requests cannot both succeed).
+- Audit: every adjustment writes an entry with the change, reason, before/after stock, actor. Decided in P1-T08: there is no separate InventoryAdjustment collection; the audit entry (`inventory.adjusted`) is the adjustment record.
 
 **Not in this task:** stock changes from orders (Phase 5).
 

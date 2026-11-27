@@ -42,7 +42,7 @@ Goal of the phase: an editable cart, shipping fees by governorate zone, coupons 
 - Endpoints (customer only, own cart only; the cart is found from the token, never from an id in the request):
   - `GET /api/v1/cart`
   - `POST /api/v1/cart/items`: variant id and quantity. Adding a variant already in the cart increases its quantity (or replaces it; choose and document).
-- Data: one cart per user (enforced by a unique index), items with variant ref and quantity. Decide whether to store a price in the cart at all, and justify (the brief says prices are recalculated on the server).
+- Data: one cart per user (enforced by a unique index), items with `variantId` and quantity only. Decided in P1-T08: **no price is stored in the cart**; prices are always read from the variant by the server. Add the maximum number of cart lines as a config value (the cart array must stay bounded).
 - Business rules: quantity is a positive integer up to a maximum per line; the variant and its product must be active; the requested total quantity must not exceed current stock (this is a friendly check, not the guarantee; the guarantee is in P5-T02).
 - `GET /cart` returns each line with current title, SKU, size/color, unit price, line total, and the subtotal, all computed by the server.
 

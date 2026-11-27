@@ -123,6 +123,7 @@ Full design: `docs/design/erd.md` (diagram and indexes) and `docs/design/data-mo
 *Why:* every user has exactly one role in the brief, so a single enum keeps authorization a simple "role in allowed list"; arrays or a Role collection solve problems the MVP does not have. The auth middleware reads the role from the database (it already loads the user for `isActive` and `passwordChangedAt`), so a role change applies on the next request.
 - **Inventory adjustments: no separate collection.** Each adjustment is an AuditLog entry (`action: "inventory.adjusted"`, reason, signed change, before/after stock, note).
 *Why:* same shape as an audit entry, and every adjustment must be audited anyway; a second collection would duplicate the facts. The "`initial_stock` only once" rule is enforced by an `initialStockSet` flag on the Variant, flipped in the same conditional update that adds the stock, not by reading the log first (read-then-write is unsafe under concurrency).
+- **Order keeps no reference to its shipping zone:** only `shippingZoneName` and `shippingFee` snapshots, so editing or deleting a zone cannot affect an old order.
 - **Cart stores no prices:** items are `variantId` + `quantity` only; prices are always read from the Variant by the pricing service.
 
 ## Open (the learner decides during `/plan-task`)

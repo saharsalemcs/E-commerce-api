@@ -190,7 +190,7 @@ Notes:
 | `coupon` | object | no | `couponId`, `code`, `type`, `value`, `maxDiscount` | snapshot |
 | `subtotal` | Number | yes | integer piasters `>= 0` | |
 | `discount` | Number | yes | integer piasters, `0` .. `subtotal` | |
-| `shippingZoneName` | String | yes | | snapshot |
+| `shippingZoneName` | String | yes | | snapshot only; the Order keeps **no** reference to the zone, so editing or deleting a zone cannot affect it |
 | `shippingFee` | Number | yes | integer piasters `>= 0` | snapshot |
 | `total` | Number | yes | integer piasters `>= 0` | equals the quote total |
 | `currency` | String | yes | `EGP` | |
@@ -247,11 +247,11 @@ Notes:
 |---|---|---|---|---|
 | `actorId` | ObjectId -> User | yes | | |
 | `actorRole` | String | yes | | role at the time of the action |
-| `action` | String | yes | fixed list, for example `inventory.adjusted`, `variant.price_changed`, `user.role_changed` | |
+| `action` | String | yes | fixed list, for example `inventory.adjusted`, `stock.deducted_by_order`, `stock.restored_by_cancellation`, `variant.price_changed`, `user.role_changed` | |
 | `entityType` | String | yes | `variant`, `order`, `coupon`, `user`, `shipping_zone`, ... | |
 | `entityId` | ObjectId | yes | | |
 | `changes` | object | no | before / after of changed fields | |
-| `reason` | String | no | required for `inventory.adjusted` | |
+| `reason` | String | no | required for `inventory.adjusted` (fixed list in 3.4); not used for order-driven stock actions | |
 | `metadata` | object | no | for example stock change and note | |
 
 Indexes: `{ entityType: 1, entityId: 1, createdAt: -1 }`; `{ actorId: 1, createdAt: -1 }`; `{ action: 1, createdAt: -1 }`.
@@ -285,6 +285,7 @@ Notes:
 
 ### 3.4 Inventory adjustments: no separate collection, written to the AuditLog
 - Each adjustment is one AuditLog entry with `action: "inventory.adjusted"`, `entityType: "variant"`, `entityId`, `reason` (`initial_stock`, `restock`, `damaged`, `lost`, `correction`), and `changes` / `metadata` holding the signed change, the before/after stock, and the optional note.
+- This section covers **manual** adjustments only. Stock changed by an order (deduct on create, restore on cancel) is also audited, under separate actions that carry the `orderId` (see section 5.2).
 - **Why:** an adjustment record has the same shape as an audit entry (actor, entity, before/after, reason, time), and the decision "every adjustment is written to the audit log" already exists. A second collection would store the same facts twice and could drift.
 - **The `initial_stock` rule is enforced on the Variant, not by reading the log.** Checking the log first and then writing is read-then-write, and two concurrent requests could both pass. Instead, `initialStockSet` on the Variant is flipped from `false` to `true` in the same conditional update that adds the stock, so only one request can succeed.
 - **Cost (accepted):** stock-history reports query `auditlogs` filtered by `entityType` / `entityId` / `action`. The indexes cover this.
@@ -297,7 +298,7 @@ Notes:
 | `items[].title`, `size`, `color` | A renamed or deactivated product would rewrite or break the order history. |
 | `items[].sku` | Reports and support need the SKU that was sold, even if the variant is later deactivated. |
 | `shippingAddress` (all fields) | Editing or deleting the address in the profile would change where an old order was delivered. |
-| `shippingZoneName`, `shippingFee` | A fee change on the zone would change an old order's total. |
+| `shippingZoneName`, `shippingFee` | (no reference to the zone is kept) A fee change on the zone would change an old order's total. |
 | `coupon` (code, type, value, cap) | Editing or deactivating the coupon would make the discount impossible to explain. |
 | `subtotal`, `discount`, `total`, `currency` | The order total must stay exactly what was quoted and agreed. |
 
@@ -323,7 +324,7 @@ References kept next to the snapshots, for actions only: `items[].variantId` (re
 | `variants.stock >= 0` | schema `min: 0`. This is only a backstop, see 5.2 (stock deduction). |
 | Order item `quantity` is an integer `>= 1`; order items are non-empty | schema validators on `orders.items` |
 | An order / cart belongs to exactly one user | required `userId` reference |
-| Snapshot fields on the Order are immutable | schema `immutable: true` on the snapshot fields |
+| Snapshot fields on the Order are immutable | schema `immutable: true` on the snapshot fields. Mongoose blocks changes to immutable paths on `save()` and, in strict mode, on query updates such as `updateOne` / `findOneAndUpdate` (Mongoose docs, "Timestamps" and "SchemaTypes"). The native driver bypasses it, and the behaviour on paths inside `items[]` is to be confirmed in P5-T01. |
 | Return request never overwrites the order's payment status | separate collection and separate `refundStatus` |
 
 ### 5.2 In services and transactions (rules a schema cannot express)
@@ -338,7 +339,7 @@ References kept next to the snapshots, for actions only: `items[].variantId` (re
 | A line is purchasable only if variant, product and category are all active | checked in cart, quote and order creation |
 | Order status moves only along allowed transitions | conditional update on the current status plus a `statusHistory` entry (state machine in P1-T09) |
 | Status history and audit log are append-only | service code (`$push` only, no update or delete endpoints) |
-| Every stock change writes one audit entry with a reason | the audit log is the stock ledger |
+| Every stock change writes one audit entry | the audit log is the stock ledger. Manual changes use `inventory.adjusted` with a `reason` from the fixed list. Changes caused by orders use their own actions (`stock.deducted_by_order`, `stock.restored_by_cancellation`), carry the `orderId` in `metadata`, and need no `reason`. Whether the audit write is inside the transaction is decided in P5-T02. |
 | `initial_stock` only once per variant | `initialStockSet` flag flipped in the same conditional atomic update that adds the stock |
 | Ownership | the user id always comes from the verified token; another user's resource answers `404` |
 | At least one active admin always exists; an admin cannot demote or deactivate themselves | service check before demote / deactivate |

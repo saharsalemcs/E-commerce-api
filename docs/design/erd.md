@@ -33,7 +33,6 @@ erDiagram
     ORDER ||--|{ ORDER__STATUS_HISTORY : "embeds (append-only)"
     VARIANT ||--o{ ORDER__ITEM : "referenced by"
     COUPON ||--o{ ORDER__COUPON : "referenced by"
-    SHIPPING_ZONE ||--o{ ORDER : "fee snapshot taken from"
 
     ORDER ||--o{ RETURN_REQUEST : "returned through"
 
@@ -139,8 +138,8 @@ erDiagram
         ORDER__COUPON coupon "embedded snapshot, optional"
         int subtotal "piasters"
         int discount "piasters, <= subtotal"
-        string shippingZoneName "snapshot"
-        int shippingFee "piasters, snapshot"
+        string shippingZoneName "snapshot only, no reference to SHIPPING_ZONE"
+        int shippingFee "piasters, snapshot copied from the zone at checkout"
         int total "piasters, >= 0"
         string currency "EGP"
         string status "pending, accepted, packing, shipped, delivered, cancelled"
@@ -219,7 +218,7 @@ erDiagram
         object changes "before / after of changed fields"
         string reason "optional; required for inventory.adjusted"
         object metadata "optional extra data, e.g. stock change and note"
-        date createdAt "append-only, never updated"
+        date createdAt "append-only: timestamps with updatedAt disabled"
     }
 ```
 
