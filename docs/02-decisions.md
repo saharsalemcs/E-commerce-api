@@ -108,11 +108,25 @@
 - Phase 8 (optional extras) starts only after Phase 6 is "Ready".
 - Items marked "choose and document" in the task files are decided by the learner during `/plan-task` and recorded here.
 
+## Data model (P1-T08, 2026-11-27)
+Full design: `docs/design/erd.md` (diagram and indexes) and `docs/design/data-model.md` (explanation, snapshots, invariants).
+
+- **Variants: separate `variants` collection, one document per SKU** (with `productId` reference, `sku`, `size`, `color`, `price`, `stock`, `isActive`).
+*Why:*
+  - Stock for one SKU changes with one atomic conditional update on one small document; other SKUs are never touched (brief scenario 01).
+  - Unique `sku` and unique `{ product, size, color }` are real database guarantees. A unique index on an embedded array only works across documents, so it would not stop duplicates inside one product's own array (MongoDB Manual, "Unique Indexes").
+  - Cart and order items reference the variant `_id` directly; the product document stays small.
+  - Cost accepted: listing and detail need a second query or `$lookup` for price range and in-stock flag. A denormalized `priceMin` / `priceMax` on Product can be added later if listing is slow.
+- **Addresses: embedded array in User, max 10.**
+*Why:* bounded, always read with the user, never shared; ownership comes free because every lookup is filtered by the user from the token; changing the default is one atomic write. Orders keep an address **snapshot**, so editing or deleting an address never changes an old order.
+- **Roles: one `role` string field**, enum `admin`, `catalog_manager`, `order_operator`, `customer`, default `customer`.
+*Why:* every user has exactly one role in the brief, so a single enum keeps authorization a simple "role in allowed list"; arrays or a Role collection solve problems the MVP does not have. The auth middleware reads the role from the database (it already loads the user for `isActive` and `passwordChangedAt`), so a role change applies on the next request.
+- **Inventory adjustments: no separate collection.** Each adjustment is an AuditLog entry (`action: "inventory.adjusted"`, reason, signed change, before/after stock, note).
+*Why:* same shape as an audit entry, and every adjustment must be audited anyway; a second collection would duplicate the facts. The "`initial_stock` only once" rule is enforced by an `initialStockSet` flag on the Variant, flipped in the same conditional update that adds the stock, not by reading the log first (read-then-write is unsafe under concurrency).
+- **Cart stores no prices:** items are `variantId` + `quantity` only; prices are always read from the Variant by the pricing service.
+
 ## Open (the learner decides during `/plan-task`)
-- Variant modeling: embedded in the product or a separate collection.
-- API response and error shape.
 - Auth token transport (header or cookie) and the exact reset-password flow.
-- Role storage (single role field or other).
 - Transactions versus compensating steps for order creation.
 - Folder structure details (see `.claude/rules/folder-structure.md`).
 

@@ -201,33 +201,56 @@ Goal of the phase: a running Express 5 app with one place for config, a database
 
 ### P1-T08 Data design: ERD
 
-**Goal:** Design the data model for the whole MVP before writing models, and record the main modeling decisions.
-**Source:** Brief section 06 (entities and invariants); brief section 10 week 1 ("finalize SKUs, product variants, inventory, user roles").
+**Goal:** Design the data model for the whole MVP before you write any model, and record the main modeling decisions so that Phases 2 to 7 build on one agreed design.
+**Source:** Brief section 06 (entities, relationships, invariants); brief section 10 week 1 ("finalize SKUs, product variants, inventory, user roles"); brief section 09 scenarios 01 and 02; EC-02, EC-05, EC-07, EC-08, EC-12.
 **Depends on:** none (do it before Phase 2 code).
 
 **Scope**
 
-- A diagram (any tool: draw.io, Excalidraw, Mermaid) saved under `docs/design/`, plus a short text file explaining it.
-- Entities: User (with roles), Address, AuditLog, Category, Product, Variant (SKU), ShippingZone, Cart, Coupon, Order (with items, address snapshot, shipment fields, statusHistory), ReturnRequest.
-- For each: key fields, types, required/unique, indexes, and relationships (reference vs embedded).
-- Decide and record in `docs/02-decisions.md`:
-  - **Variant modeling:** embedded in Product or separate collection. Give at least two trade-offs (atomic stock updates on one SKU, querying by SKU, document size, listing price range).
-  - **Address storage:** embedded in User or separate collection.
-  - **Role storage:** single field or other.
-- Mark which fields are **snapshots** on the Order and why.
-- Mark which invariants live in the schema/indexes (for example unique SKU, stock never negative).
+- Deliverables, both under `docs/design/`:
+  - An ERD (any tool: draw.io, Excalidraw, Mermaid). If the tool saves a binary or external file, also commit an exported image so it can be read on GitHub.
+  - A short text file (for example `docs/design/data-model.md`) that explains the diagram: one paragraph per entity plus the decisions below.
+- Entities to include (MVP only):
+  - **User** (roles, active flag, password-changed timestamp, password-reset fields), **Address**.
+  - **Category**, **Product**, **Variant** (SKU, size, color, price, stock).
+  - **Inventory adjustment** record (change, reason, before/after stock, actor). Decide whether it is its own collection or only an AuditLog entry.
+  - **ShippingZone** (governorates, fee).
+  - **Cart** (one per customer) with its items.
+  - **Coupon** (type, value, cap, minimum subtotal, expiry, usage limit, usage count).
+  - **Order** with items, address snapshot, shipping fee, coupon and discount, totals, `paymentMethod`, `paymentStatus`, order status, shipment fields, `statusHistory`, and a human-readable unique order reference.
+  - **AuditLog**.
+  - **ReturnRequest** (stretch, Phase 7, but model it now so the Order does not need redesigning later).
+- For each entity: **key fields only** (not every field), type, required / unique / default, indexes, and every relationship labeled with its cardinality (1-1, 1-many) and with **reference** or **embedded**. For every array, write whether it is bounded or can grow without limit.
+- Decide and record in `docs/02-decisions.md`, each with your reasons:
+  - **Variant modeling:** embedded in Product or a separate collection. Give at least two trade-offs, considering: an atomic stock update on one SKU, finding a variant by SKU, how a unique SKU / unique size+color is enforced, document size, and showing a price range on the product listing.
+  - **Address storage:** embedded in User or a separate collection. Consider the maximum number of addresses, the default address, and how the Order keeps the address it was delivered to.
+  - **Role storage:** a single role field or something else. Consider the four roles, the "at least one active admin" rule, and how a role change reaches an already-issued token.
+- Mark on the diagram (or in the text file) which Order and order-item fields are **snapshots**, and explain for each one what would go wrong without it (price changes, product renamed, address edited, coupon deleted).
+- List the invariants and say where each one is enforced: schema, index, atomic query, or service code. At least:
+  - SKU is unique; size+color is unique within one product.
+  - Stock is never negative.
+  - Money fields are integer piasters; totals are never negative.
+  - A cart belongs to exactly one customer; an order belongs to exactly one customer.
+  - The order reference is unique.
+  - Coupon code is unique; usage count never goes above the usage limit.
+  - User email is unique (stored lowercase).
+- Show what the brief lists that you are **not** modeling, and why: StockReservation and PaymentAttempt (deferred), a separate Shipment entity (decided: fields live inside the Order), ProductImage (decided: array of URL strings), ChatConversation (out). The brief's "reserved stock" is not used while stock is deducted at order creation.
 
-**Not in this task:** any code.
+**Not in this task:** any code or Mongoose schema; the order and payment status transitions (P1-T09); Phase 8 extras (Brands, Subcategories, Reviews, Wishlist), which are designed in their own tasks.
 
-**Acceptance criteria**
+**Acceptance criteria (verify by walking through the diagram with the mentor)**
 
-- Every MVP entity is in the diagram with its relationships.
-- The three decisions above are written in `docs/02-decisions.md` with reasons.
-- You can explain how "two variants of one product, buy one, only its stock changes" (brief scenario 01) maps to your model.
+- Every entity listed above is in the diagram, with fields, indexes, and labeled relationships.
+- The three decisions (variant, address, role) and the inventory-adjustment decision are in `docs/02-decisions.md` with reasons, and are removed from its "Open" list.
+- **Brief scenario 01:** you can show, on your model, how "a product has two variants, a customer buys one, only that variant's stock changes" works, and which single update changes the stock.
+- **Brief scenario 02:** you can show which stored fields let anyone check later that the order total equals the quote (subtotal, discount, shipping, total), even after prices change.
+- You can answer: "the catalog manager changes a variant's price after an order was placed. What changes in the database, and what does the customer see in their order history?"
+- You can answer: "a customer edits or deletes an address used by an old order. What happens to that order?"
+- You can name which of your arrays can grow without limit and why that is acceptable or not.
 
-**Concepts to review:** MongoDB data modeling (embed vs reference, bounded vs unbounded arrays); denormalization and snapshots; schema-level invariants.
+**Concepts to review:** MongoDB data modeling: embedding vs referencing, the unbounded-arrays antipattern and the 16 MiB document limit (MongoDB Manual, "Data Modeling", "Embedded Data", and "Avoid Unbounded Arrays"); how a unique index behaves on fields inside an embedded array compared with a separate collection (MongoDB Manual, "Unique Indexes"); denormalization and snapshots; single-document atomicity; cardinality and ERD notation.
 
-**Definition of done:** the diagram and decisions exist, and `/review-task` has returned "Ready".
+**Definition of done:** the diagram and the text file are committed under `docs/design/`, the decisions are in `docs/02-decisions.md`, you can answer every question in the acceptance criteria, and `/review-task` has returned "Ready".
 
 ---
 

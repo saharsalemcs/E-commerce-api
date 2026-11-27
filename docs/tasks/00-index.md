@@ -8,7 +8,7 @@ Work loop per task: `/plan-task` (bring your own plan) -> code -> `/hint` when s
 These apply to every task, so the task files do not repeat them.
 
 - **Base path:** `/api/v1`. Staff-only routes live under `/api/v1/admin/...`. Paths in tasks are contracts; small renames are fine if agreed in `/plan-task` and kept consistent.
-- **Roles:** `admin`, `catalog_manager`, `order_operator`, `customer`. "Staff" means the first three. How roles are stored is decided in P2-T01.
+- **Roles:** `admin`, `catalog_manager`, `order_operator`, `customer`. "Staff" means the first three. How roles are stored is decided in P1-T08 (ERD) and implemented in P2-T01.
 - **Status codes:** `400` invalid input; `401` no token (or an invalid/expired one); `403` wrong role; `404` someone else's resource, or not found (never reveal that another user's resource exists); `409` conflict (duplicate, wrong state, not enough stock); `429` rate limited. Every protected task lists the `401` / `403` / `404` cases that apply in its acceptance criteria.
 - **Customer-only endpoints** (cart, quote, orders, returns, reviews, wishlist): staff get `403`.
 - **Stock:** new variants start at `0`. Stock changes only through inventory adjustments (first one with reason `initial_stock`) or orders.
@@ -31,7 +31,7 @@ These apply to every task, so the task files do not repeat them.
 | [x] | P1-T07 | Security and logging middleware | P1-T03, P1-T05 |
 | [ ] | P1-T08 | Data design: ERD | none (do before Phase 2 code) |
 | [ ] | P1-T09 | Data design: order and payment state diagrams | P1-T08 |
-س
+
 ## Phase 2: Auth and users (`phase-2-auth-and-users.md`)
 | | ID | Task | Depends on |
 |---|---|---|---|
