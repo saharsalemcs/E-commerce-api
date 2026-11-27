@@ -11,13 +11,13 @@ export default [
     files: ["**/*.js"],
     languageOptions: {
       ecmaVersion: "latest",
-      sourceType: "commonjs",
+      sourceType: "module",
       globals: {
         ...globals.node,
       },
     },
     rules: {
-      "no-unused-vars": ["warning", { argsIgnorePattern: "^_" }],
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
   eslintConfigPrettier,
