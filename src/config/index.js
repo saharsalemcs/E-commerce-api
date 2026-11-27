@@ -26,6 +26,8 @@ const envSchema = z.object({
   BODY_LIMIT: z.string().default("100kb"),
   //  number of proxies in front of the app (0 = none)
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
+  // bcrypt cost factor; OWASP minimum is 10, each +1 doubles hashing time
+  BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(14).default(12),
 });
 
 const result = envSchema.safeParse(process.env);
@@ -50,6 +52,7 @@ const config = Object.freeze({
   corsOrigins: Object.freeze(env.CORS_ORIGINS),
   bodyLimit: env.BODY_LIMIT,
   trustProxy: env.TRUST_PROXY,
+  bcryptRounds: env.BCRYPT_ROUNDS,
 });
 
 export default config;
