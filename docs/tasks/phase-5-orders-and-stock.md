@@ -129,7 +129,7 @@ Business invariants for the whole phase (brief section 06, adjusted by `01-scope
 - Endpoint: `POST /api/v1/users/me/orders/:id/cancel` (customer, own order). Body: optional reason.
 - Build the cancellation logic as a **service function** that P6-T04 (staff cancellation) will reuse with different allowed states.
 - Inside one transaction: change status to `cancelled` **only if** the current status is still allowed (conditional update, so a concurrent status change by staff cannot be overwritten); restore stock for every line with atomic increments; decrement the coupon used count if a coupon was used; add a `statusHistory` entry and cancellation details (who, when, reason); write audit entries.
-- Payment status after cancellation follows your state diagram.
+- Payment status becomes `voided` in the same update as `status: cancelled` (`docs/design/order-state-machine.md`). The service must throw when the conditional update matches nothing, so the transaction aborts and no stock is restored.
 
 **Invariants that apply:** cancelled is a distinct state; history is appended, never overwritten; stock restored exactly once.
 

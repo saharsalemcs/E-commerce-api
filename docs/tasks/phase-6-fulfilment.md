@@ -65,8 +65,8 @@ Roles in this phase: order operations are allowed to `admin` and `order_operator
 **Depends on:** P6-T02.
 
 **Scope**
-- Endpoint: `POST /api/v1/admin/orders/:id/mark-paid` (admin, order operator), or set it as part of the delivered transition if your state diagram says so. Choose and keep it consistent with P1-T09.
-- Business rules: only when status is `delivered`, payment method `cod`, and payment status `pending`; conditional update so it happens once; store who confirmed it and when (for example `paidAt`); audit entry (financial change).
+- Endpoint: `POST /api/v1/admin/orders/:id/mark-paid` (admin, order operator). A separate action, not automatic on `delivered` (decided in P1-T09, `docs/design/order-state-machine.md`, transition P2).
+- Business rules: only when status is `delivered`, payment method `cod`, and payment status `pending`, all three in the update filter; conditional update so it happens once; store who confirmed it and when (for example `paidAt`); audit entry (financial change).
 
 **Invariants that apply:** a paid event happens once; payment status is separate from fulfilment status.
 

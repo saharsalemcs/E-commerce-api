@@ -194,9 +194,9 @@ Notes:
 | `shippingFee` | Number | yes | integer piasters `>= 0` | snapshot |
 | `total` | Number | yes | integer piasters `>= 0` | equals the quote total |
 | `currency` | String | yes | `EGP` | |
-| `status` | String | yes | `pending`, `accepted`, `packing`, `shipped`, `delivered`, `cancelled`; default `pending` | transitions in P1-T09 |
+| `status` | String | yes | `pending`, `accepted`, `packing`, `shipped`, `delivered`, `cancelled`; default `pending` | transitions in [order-state-machine.md](order-state-machine.md) |
 | `paymentMethod` | String | yes | `cod` | |
-| `paymentStatus` | String | yes | values from P1-T09; default `pending` | |
+| `paymentStatus` | String | yes | `pending`, `paid`, `voided`; default `pending` | transitions in [order-state-machine.md](order-state-machine.md) |
 | `paidAt` / `paidById` | Date / ObjectId -> User | no | | set at COD confirmation |
 | `carrier` / `trackingNote` | String | no | | set on `shipped` |
 | `shippedAt` / `deliveredAt` | Date | no | | |
@@ -247,7 +247,7 @@ Notes:
 |---|---|---|---|---|
 | `actorId` | ObjectId -> User | yes | | |
 | `actorRole` | String | yes | | role at the time of the action |
-| `action` | String | yes | fixed list, for example `inventory.adjusted`, `stock.deducted_by_order`, `stock.restored_by_cancellation`, `variant.price_changed`, `user.role_changed` | |
+| `action` | String | yes | fixed list, for example `inventory.adjusted`, `stock.deducted_by_order`, `stock.restored_by_cancellation`, `order.status_changed`, `order.payment_status_changed`, `variant.price_changed`, `user.role_changed` | |
 | `entityType` | String | yes | `variant`, `order`, `coupon`, `user`, `shipping_zone`, ... | |
 | `entityId` | ObjectId | yes | | |
 | `changes` | object | no | before / after of changed fields | |
@@ -337,7 +337,7 @@ References kept next to the snapshots, for actions only: `items[].variantId` (re
 | Totals are recomputed on the server; order total = quote total | one pricing service for quote and order; an `expectedTotal` mismatch is rejected (P5-T01) |
 | Total never goes negative | `discount <= subtotal`, checked in the pricing service |
 | A line is purchasable only if variant, product and category are all active | checked in cart, quote and order creation |
-| Order status moves only along allowed transitions | conditional update on the current status plus a `statusHistory` entry (state machine in P1-T09) |
+| Order status moves only along allowed transitions | conditional update on the current status plus a `statusHistory` entry (state machine in [order-state-machine.md](order-state-machine.md)) |
 | Status history and audit log are append-only | service code (`$push` only, no update or delete endpoints) |
 | Every stock change writes one audit entry | the audit log is the stock ledger. Manual changes use `inventory.adjusted` with a `reason` from the fixed list. Changes caused by orders use their own actions (`stock.deducted_by_order`, `stock.restored_by_cancellation`), carry the `orderId` in `metadata`, and need no `reason`. Whether the audit write is inside the transaction is decided in P5-T02. |
 | `initial_stock` only once per variant | `initialStockSet` flag flipped in the same conditional atomic update that adds the stock |

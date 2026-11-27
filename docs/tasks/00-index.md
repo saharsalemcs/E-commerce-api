@@ -30,7 +30,7 @@ These apply to every task, so the task files do not repeat them.
 | [x] | P1-T06 | Request validation with Zod | P1-T05 |
 | [x] | P1-T07 | Security and logging middleware | P1-T03, P1-T05 |
 | [x] | P1-T08 | Data design: ERD | none (do before Phase 2 code) |
-| [ ] | P1-T09 | Data design: order and payment state diagrams | P1-T08 |
+| [x] | P1-T09 | Data design: order and payment state diagrams | P1-T08 |
 
 ## Phase 2: Auth and users (`phase-2-auth-and-users.md`)
 | | ID | Task | Depends on |

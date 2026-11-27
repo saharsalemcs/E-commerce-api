@@ -46,7 +46,7 @@
 - An order is created as `pending`. An order operator or admin moves it `pending -> accepted -> packing -> shipped -> delivered`. Any other transition is rejected.
 - A customer may cancel their own order only while it is `pending` or `accepted`. Staff may cancel until before `shipped`. After `shipped` there is no cancellation (returns instead).
 - Cancellation restores the stock and the coupon usage in the same transaction.
-- COD `paymentStatus` becomes `paid` at `delivered`, set by an order operator or admin.
+- COD `paymentStatus` becomes `paid` at `delivered`, set by an order operator or admin. Refined in P1-T09: a separate mark-paid action, see "Order and payment state machines".
 
 ### Shipping
 - Shipping zones by governorate: a `ShippingZone` holds a list of governorates and a fee. Admin has CRUD on zones.
@@ -125,6 +125,24 @@ Full design: `docs/design/erd.md` (diagram and indexes) and `docs/design/data-mo
 *Why:* same shape as an audit entry, and every adjustment must be audited anyway; a second collection would duplicate the facts. The "`initial_stock` only once" rule is enforced by an `initialStockSet` flag on the Variant, flipped in the same conditional update that adds the stock, not by reading the log first (read-then-write is unsafe under concurrency).
 - **Order keeps no reference to its shipping zone:** only `shippingZoneName` and `shippingFee` snapshots, so editing or deleting a zone cannot affect an old order.
 - **Cart stores no prices:** items are `variantId` + `quantity` only; prices are always read from the Variant by the pricing service.
+
+## Order and payment state machines (P1-T09, 2026-11-27)
+Full design: `docs/design/order-state-machine.md` (diagrams, transition tables, labels, concurrency).
+
+- **Whitelist transition tables** for `status` and `paymentStatus`; anything not listed returns `409`.
+*Why:* a list of forbidden moves always misses a case (skip, go back, leave a final state, same state twice).
+- **Action endpoints, not "set status to X" from the client.** The server checks the current state against the table.
+*Why:* the server owns the state; otherwise a client could jump an order from `pending` to `delivered`.
+- **Two separate machines** (`status` for logistics, `paymentStatus` for money), linked by guards.
+*Why:* a future online payment gateway changes only the payment machine.
+- **Payment values: `pending`, `paid`, `voided`.** Cancelling an order sets `paymentStatus: voided` in the same update. No `refunded` on the Order.
+*Why:* `pending` means money is still expected, so a cancelled order left `pending` would be counted in cash-to-collect and sales reports (P7-T02). A paid order can never be cancelled (paid only after `delivered`, no cancel after `shipped`); refunds after a return live in `ReturnRequest.refundStatus`.
+- **Mark paid is a separate action** (`POST /api/v1/admin/orders/:id/mark-paid`, P6-T03), allowed only when `status = delivered`, `paymentMethod = cod`, `paymentStatus = pending`.
+*Why:* delivery and cash collection are two facts with two actors; this keeps "delivered but not paid yet" visible.
+- **Every transition is one conditional update** with the expected state (and `userId` for a customer) in the filter. Inside a transaction, a `null` result must be turned into a thrown `AppError` so the transaction aborts.
+*Why:* read-check-save is a check-then-act race; a single-document write is atomic, so exactly one of two concurrent requests matches.
+- **Order of checks on transition endpoints:** `401` -> `403` -> `400` -> `404` (not found or not own) -> `409` (wrong state).
+- **Accepted gap:** a refused COD parcel has no path after `shipped`; a `delivery_failed` state is post-MVP.
 
 ## Open (the learner decides during `/plan-task`)
 - Auth token transport (header or cookie) and the exact reset-password flow.
