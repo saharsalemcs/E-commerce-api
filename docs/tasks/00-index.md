@@ -37,7 +37,7 @@ These apply to every task, so the task files do not repeat them.
 |---|---|---|---|
 | [x] | P2-T01 | User model | P1-T04, P1-T08 |
 | [x] | P2-T02 | Register | P2-T01, P1-T06 |
-| [ ] | P2-T03 | Login and authentication middleware | P2-T02 |
+| [x] | P2-T03 | Login and authentication middleware | P2-T02 |
 | [ ] | P2-T04 | Role authorization and first-admin seed | P2-T03 |
 | [ ] | P2-T05 | Staff management and the pagination convention | P2-T04 |
 | [ ] | P2-T06 | Own profile and password change | P2-T03 |

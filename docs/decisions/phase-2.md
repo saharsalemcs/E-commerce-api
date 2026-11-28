@@ -25,6 +25,14 @@ Schema: `registerBodySchema` in `src/modules/auth/auth.validation.js`.
 *Why:* bcrypt ignores everything after 72 bytes, so a longer password is rejected instead of silently truncated. The limit is in bytes because a non-ASCII character takes more than one. Spaces are valid password characters. Length is preferred over composition rules.
 - **`passwordConfirm`:** the confirmation field name. It must equal `password`; the mismatch is reported on `body.passwordConfirm`, even when unrelated fields also fail. It is never passed to the model.
 
+## Login and authentication (P2-T03, 2026-11-28)
+- **Wrong email and wrong password:** the same `401` `Invalid credentials.`. An unknown email is still compared against a dummy bcrypt hash.
+*Why:* a different message or a faster response would reveal which emails are registered. Limit: register still answers `409` for an existing email, so this does not hide accounts completely.
+- **Inactive user at login:** `401` `This account is deactivated.`, checked only after the password matches.
+*Why:* `403` means wrong role in this API. The distinct message is acceptable because only someone who knows the password can see it.
+- **JWT errors:** mapped to `401` in the error middleware. An expired token gets its own message; invalid and not-yet-active tokens share one.
+*Why:* an expired session is normal and the client should simply log in again; other failures do not need to be explained to the caller.
+
 ## Open (the learner decides during `/plan-task`)
 - The exact reset-password flow.
 - Transactions versus compensating steps for order creation.

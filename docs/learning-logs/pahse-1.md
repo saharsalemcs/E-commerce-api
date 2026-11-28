@@ -1,9 +1,3 @@
-# Learning log
-
-One entry per task that reached "Ready" in `/review-task`: date, task ID, the most important feedback, concepts learned.
-
-<!-- entries are appended below -->
-
 ## 2026-11-22: P1-T01 Project setup and folder structure
 - **Feedback:** `app.js` is separate from `server.js`; `.gitignore` uses `.env*` with `!.env.example`; empty folders are not tracked by Git; module system changed from ESM to CommonJS and recorded in `docs/02-decisions.md`.
 - **Concepts:** CommonJS vs ESM, why `app` and `server` are split, modular monolith vs layered-by-type folders, `engines` in `package.json`.
@@ -43,13 +37,3 @@ One entry per task that reached "Ready" in `/review-task`: date, task ID, the mo
 - **Accepted gap:** a refused COD parcel has no path after `shipped` (`delivery_failed` is post-MVP).
 - **Concepts:** finite state machines, transition tables (whitelist), guards, final states, check-then-act race conditions, conditional atomic updates, transaction abort and `TransientTransactionError` retry, server-owned state.
 
-## 2026-11-28: P2-T01 User model
-- **How it was recorded:** added after P2-T02 because it was missed; rebuilt from the code, the commits and the recorded decisions, not from the review notes.
-- **Feedback:** `email` is unique, trimmed and lowercased, so the same address in a different case is a duplicate (`409`); `passwordHash` uses `select: false` and is also removed in the `toJSON` transform, because `select: false` does not apply to the document returned by `create`; hashing lives in `src/common/utils/password.js` and is called by services, not by a model hook, since `save` hooks do not run on query updates; `bcryptjs` with the cost factor from `BCRYPT_ROUNDS`; roles and the Egyptian phone regex are shared constants; the `{ role, isActive }` index is there for P2-T05. Recorded in `docs/decisions/phase-2.md`.
-- **Concepts:** password hashing, salt and cost factor, Mongoose `select: false` and `toJSON` transforms, pre-save hooks vs service-level logic, unique indexes vs validation.
-
-## 2026-11-28: P2-T02 Register
-- **How it was done:** the mentor wrote the validation schema, the router wiring, the response helpers and the decision records on request, and fixed the service parameters and the response shape; the learner wrote the first version of the service, controller, route, token helper and JWT config, restored the token in the response and verified the acceptance criteria in Postman.
-- **Feedback:** ESM relative imports need the file extension, and a clean lint run does not prove the imports resolve; one object argument does not spread into positional parameters, so destructure by name; the response must match the recorded decision (`data: { user, token }`); success and error bodies are built in one place (`sendSuccess`, `sendError`), while errors are still thrown as `AppError`; module routers are mounted in `src/routes.js` under `/api/v1`; the client never chooses its role (`strictObject` plus the service setting `customer`); a Postman script should save the token only on `201`. Recorded in `docs/decisions/phase-2.md`.
-- **Open (not blocking):** `JWT_SECRET` accepts an empty string, so a misconfigured environment would create the user and then fail to sign the token.
-- **Concepts:** JWT claims, signing and expiry, Bearer header vs cookie (XSS, CSRF), mass assignment, object destructuring in parameters, the bcrypt 72-byte limit, Zod `refine` with `path` and `when`, Express Router, partial failure.
