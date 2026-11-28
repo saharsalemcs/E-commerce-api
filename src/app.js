@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
 import config from "./config/index.js";
+import apiRouter from "./routes.js";
 import notFound from "./common/middlewares/notFound.js";
 import errorHandler from "./common/middlewares/errorHandler.js";
 import { corsMiddleware } from "./common/middlewares/cors.js";
@@ -31,9 +32,7 @@ if (config.env === "development") {
 app.use(express.json({ limit: config.bodyLimit }));
 
 // 2) Mount Routes
-app.get("/api/v1/health", (req, res) => {
-  res.status(200).json({ status: "OK", message: "Service is up" });
-});
+app.use("/api/v1", apiRouter);
 
 // 404 handler
 app.use(notFound);
