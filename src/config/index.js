@@ -28,6 +28,15 @@ const envSchema = z.object({
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
   // bcrypt cost factor; OWASP minimum is 10, each +1 doubles hashing time
   BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(14).default(12),
+
+  JWT_SECRET: z.string(),
+
+  JWT_EXPIRES_IN: z
+    .string()
+    .regex(
+      /^[1-9]\d*(s|m|h|d)$/,
+      "Use a number with a unit, e.g. 30m, 1h, 1d, 7d",
+    ),
 });
 
 const result = envSchema.safeParse(process.env);
@@ -53,6 +62,10 @@ const config = Object.freeze({
   bodyLimit: env.BODY_LIMIT,
   trustProxy: env.TRUST_PROXY,
   bcryptRounds: env.BCRYPT_ROUNDS,
+  jwt: Object.freeze({
+    jwtSecret: env.JWT_SECRET,
+    expiresIn: env.JWT_EXPIRES_IN,
+  }),
 });
 
 export default config;
