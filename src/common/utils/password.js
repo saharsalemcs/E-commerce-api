@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import config from "../../config/index.js";
 
-export const hashPassword = (plain) => bcrypt.hash(plain, config.bcryptRounds);
+export const hashPassword = async (plain) =>
+  bcrypt.hash(plain, config.bcryptRounds);
 
-export const comparePassword = (plain, hash) => bcrypt.compare(plain, hash);
+export const comparePassword = async (plain, hash) =>
+  bcrypt.compare(plain, hash);

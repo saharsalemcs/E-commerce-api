@@ -6,3 +6,9 @@ export const registerController = async (req, res) => {
 
   sendSuccess(res, { statusCode: 201, data: { user, token } });
 };
+
+export const loginController = async (req, res) => {
+  const { user, token } = await authService.login(req.validated.body);
+
+  sendSuccess(res, { statusCode: 200, data: { user, token } });
+};
