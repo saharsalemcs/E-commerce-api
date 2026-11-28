@@ -1,10 +1,11 @@
 import express from "express";
+import { sendSuccess } from "./common/utils/response.js";
 import authRouter from "./modules/auth/auth.route.js";
 
 const router = express.Router();
 
 router.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", message: "Service is up" });
+  sendSuccess(res, { data: { message: "Service is up" } });
 });
 
 // One line per module router.

@@ -1,5 +1,6 @@
 import config from "../../config/index.js";
 import AppError from "../errors/AppError.js";
+import { sendError } from "../utils/response.js";
 
 // Turn known library errors into AppError so there is one path to the client.
 const normalizeError = (err) => {
@@ -47,18 +48,20 @@ const errorHandler = (err, req, res, _next) => {
   const appError = normalizeError(err);
 
   if (appError) {
-    const body = { success: false, message: appError.message };
-    if (appError.details) body.details = appError.details;
-    return res.status(appError.statusCode).json(body);
+    return sendError(res, {
+      statusCode: appError.statusCode,
+      message: appError.message,
+      details: appError.details,
+    });
   }
 
   // Unknown error: log it on the server, send a generic message to the client.
   console.error(err);
-  const body = { success: false, message: "Internal server error" };
-  if (config.env === "development") {
-    body.stack = err.stack;
-  }
-  return res.status(500).json(body);
+  return sendError(res, {
+    statusCode: 500,
+    message: "Internal server error",
+    stack: config.env === "development" ? err.stack : undefined,
+  });
 };
 
 export default errorHandler;
