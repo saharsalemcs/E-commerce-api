@@ -16,6 +16,16 @@ const normalizeError = (err) => {
     return new AppError(err.message, err.statusCode);
   }
 
+  // jsonwebtoken: expired token. The client should log in again.
+  if (err.name === "TokenExpiredError") {
+    return new AppError("Your session has expired. Please log in again.", 401);
+  }
+
+  // jsonwebtoken: bad signature, malformed token, or not active yet.
+  if (err.name === "JsonWebTokenError" || err.name === "NotBeforeError") {
+    return new AppError("Invalid token. Please log in again.", 401);
+  }
+
   // Mongoose: invalid ObjectId or wrong type for a field.
   if (err.name === "CastError") {
     return new AppError(`Invalid value for field: ${err.path}`, 400);
