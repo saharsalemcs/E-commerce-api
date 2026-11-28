@@ -9,3 +9,7 @@ export function generateToken(userId) {
 
   return token;
 }
+
+export function verifyToken(token) {
+  return jwt.verify(token, config.jwt.jwtSecret, { algorithms: ["HS256"] });
+}

@@ -41,3 +41,8 @@ export const registerBodySchema = z
         (issue) => !["password", "passwordConfirm"].includes(issue.path?.[0]),
       ),
   });
+
+export const loginBodySchema = z.strictObject({
+  email: z.string().trim().toLowerCase().pipe(z.email("Invalid email address")),
+  password: z.string().min(1, "Password is required"),
+});
